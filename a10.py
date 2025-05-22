@@ -8,6 +8,8 @@ from match import match
 from typing import List, Callable, Tuple, Any, Match
 
 
+# GROUP: ANDY AND TREVOR
+
 def get_page_html(title: str) -> str:
     """Gets html of a wikipedia page
 
@@ -113,8 +115,8 @@ def get_birth_date(name: str) -> str:
 
 
 # below are a set of actions. Each takes a list argument and returns a list of answers
-# according to the action and the argument. It is important that each function returns a
-# list of the answer(s) and not just the answer itself.
+# according to the action and the argument. It is important that each function returns
+# a list of the answer(s) and not just the answer itself.
 
 
 def birth_date(matches: List[str]) -> List[str]:
@@ -141,21 +143,63 @@ def polar_radius(matches: List[str]) -> List[str]:
     return [get_polar_radius(matches[0])]
 
 
-# dummy argument is ignored and doesn't matter
+def get_gdp(org: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(org)))
+    # Capture GDP in a clean format (e.g., $5.4 trillion or 5.4 trillion)
+    pattern = r"(?P<gdp>GDP\s*[:|—]?\s*[\d,.]+(?:\s*(?:trillion|billion|million))?)"
+    error_text = ("No GDP information found in correct format")
+    match = get_match(infobox_text, pattern, error_text)
+    # Extract only the numeric value without the unit (trillion/billion/million)
+    return match.group("gdp").split(":")[-1].strip().split()[0]
+
+
+def gdp(matches: List[str]) -> List[str]:
+    return [get_gdp(matches[0])]
+
+
+def get_capital(org: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(org)))
+    # Capture just the capital city name
+    pattern = r"(?P<capital>Capital\s*[:|—]?\s*([A-Za-z\s]+))"
+    error_text = ("No capital information found in correct format")
+    match = get_match(infobox_text, pattern, error_text)
+    # Extract and return just the capital city name
+    return match.group("capital").split(":")[-1].strip()
+
+
+def capital(matches: List[str]) -> List[str]:
+    return [get_capital(" ".join(matches))]
+
+
+def get_Population(org: str) -> str:
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(org)))
+    # Capture numeric population, ignoring extra details
+    pattern = r"(?P<Population>Population\s*[:|—]?\s*([,\d]+))"
+    error_text = ("No population information found in correct format")
+    match = get_match(infobox_text, pattern, error_text)
+    # Extract only the numeric population value (after 'Population: ')
+    return match.group("Population").split(":")[-1].strip()
+
+
+def Population(matches: List[str]) -> List[str]:
+    return [get_Population(" ".join(matches))]
+
+
+Pattern = List[str]
+Action = Callable[[List[str]], List[Any]]
+
+
 def bye_action(dummy: List[str]) -> None:
     raise KeyboardInterrupt
 
-
-# type aliases to make pa_list type more readable, could also have written:
-# pa_list: List[Tuple[List[str], Callable[[List[str]], List[Any]]]] = [...]
-Pattern = List[str]
-Action = Callable[[List[str]], List[Any]]
 
 # The pattern-action list for the natural language query system. It must be declared
 # here, after all of the function definitions
 pa_list: List[Tuple[Pattern, Action]] = [
     ("when was % born".split(), birth_date),
-    ("what is the polar radius of %".split(), polar_radius),
+    ("what is the gdp of %".split(), gdp),
+    ("what is the capital of %".split(), capital),
+    ("what is the population of %".split(), Population),
     (["bye"], bye_action),
 ]
 
@@ -184,7 +228,7 @@ def search_pa_list(src: List[str]) -> List[str]:
 def query_loop() -> None:
     """The simple query loop. The try/except structure is to catch Ctrl-C or Ctrl-D
     characters and exit gracefully"""
-    print("Welcome to the movie database!\n")
+    print("Welcome to the wikipedia database!\n")
     while True:
         try:
             print()
