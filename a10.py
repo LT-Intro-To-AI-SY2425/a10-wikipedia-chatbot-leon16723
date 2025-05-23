@@ -7,9 +7,6 @@ from nltk.tree import Tree
 from match import match
 from typing import List, Callable, Tuple, Any, Match
 
-
-# GROUP: ANDY AND TREVOR
-
 def get_page_html(title: str) -> str:
     """Gets html of a wikipedia page
 
@@ -112,12 +109,6 @@ def get_birth_date(name: str) -> str:
     match = get_match(infobox_text, pattern, error_text)
 
     return match.group("birth")
-
-
-# below are a set of actions. Each takes a list argument and returns a list of answers
-# according to the action and the argument. It is important that each function returns
-# a list of the answer(s) and not just the answer itself.
-
 
 def birth_date(matches: List[str]) -> List[str]:
     """Returns birth date of named person in matches
